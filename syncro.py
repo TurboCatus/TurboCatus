@@ -1,8 +1,10 @@
 #! /usr/bin/python3
 import os
-add='192.168.1.4'
+os.system('./arp.py') #search ip device
+os.system('./ip.py') #convert to work
+addr=open('ip.txt') #file with ip address
+add=addr.read()
 p=os.system('ping -c 3 %s > ping.txt'%(add)) #ping ip address
-#log=os.system('touch log_sync.txt')
 a=open('ping.txt')
 b=a.read()
 c=('time=') #if ping done
@@ -12,11 +14,13 @@ port=os.system('nmap %s > port.txt'%(add)) # test port
 pp=open('port.txt')
 ppp=pp.read()
 if p in ppp:
-  os.system('date >> log_sync.txt|echo port_open >> log_sync.txt')
+  os.system('echo ------- >> log_sync.txt|date >> log_sync.txt|echo port_open >> log_sync.txt')
 else:
   os.system('echo port_not_open_or_not_present >> log_sync.txt')
-if c not in a:
+if c not in b:
   os.system('echo host_not_reachable >> log_sync.txt|date >> log_sync.txt|echo ----- >> log_sync.txt') #test ping
+else:
+  os.system('date >> log_sync.txt|echo host_reachable >> log_sync.txt')
 #if p not in port:
 #  os.system('echo port_not_open >> log_sync.txt|date >> log_sync.txt|echo----->> log_sync.txt') #test port
  #проверка на отсутствие ошибок, на пустой файл с ошибками для подключения по ssh
