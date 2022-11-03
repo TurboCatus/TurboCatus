@@ -6,7 +6,7 @@ import time
 #1---Поиск vlan и mac адреса на коммутаторе и вышрузка в файл arp.txt
 port=input('Eneter number port for scan:')
 #port = ('1/0/14')  # Номер порта коммутатора с которого нужен ip-адрес
-port_scan = ('1/0/15')  # Номер порта к кторому подключен сканер(ноутбук)
+port_scan = ('1/0/15')  # Номер порта к которому подключен сканер(ноутбук)
 arp = open('arp.txt','w')
 switch = {'device_type': 'cisco_ios', 'ip': '192.168.3.135', 'username': 'root', 'password': 'root12345',
           'secret': 'root12345'}
@@ -25,6 +25,13 @@ Mac=mac_add.read()
 a=Mac.split()
 #print(a)
 print(a[9],file=Vlan) #позиция vlan в файле
+#Скан для двух mac адресов(доделать для большего количества)
+#Сохранение всех найденных mac-адресов.
+for q in a[8::3]:
+    r=q.replace(':','-')# замена : на тире
+    low=r.lower()# переход на нижний регистр
+    print(low,file=MAC)
+'''
 try:
    ch_mac_1=a[8].replace(':','-') #замена с двоеточия на тире(заменить на позицию MAC-адреса)
    ch_mac_2=a[11].replace(':','-')
@@ -35,6 +42,7 @@ except:
     ch = a[8].replace(':', '-')  # замена с двоеточия на тире(заменить на позицию MAC-адреса)
     c = ch.lower()  # замена на нижний регистр
     print(a[8], file=MAC)  # позиция mac-адреса в файле(могут быть 2 mac-адреса),8 поз==1 MAC|11 поз==2 MAC
+'''
 MAC.close()
 
 file=open('MAC.txt')
@@ -42,35 +50,35 @@ rd=file.read()
 spl=rd.split()
 print(spl)
 #connect.enable()
-#output = connect.send_config_set([f'int {port_scan}',f'switchport acc vlan {a[9]}'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+#output_2 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan {a[9]}'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
 #time.sleep(20)
-#3---Сканирование адресов в зависимости от номера Vlan.(Дописать автоматическое переключения vlan на коммутаторе )
+#3---Сканирование адресов в зависимости от номера Vlan.
 if a[9]=='102':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.66-126 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.66-126 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='101':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.2-62 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.2-62 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='103':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.130-158 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.130-158 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='104':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.162-190 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.162-190 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='105':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.194-222 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.194-222 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='106':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -sP 192.168.1.226-254 > arp_nmap.txt' )
+    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.226-254 > arp_nmap.txt' )
     for i in spl:
       os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 else:
-    print('Check VLAN')
+    print('Check VLAN.')
 mac_add.close()
 Vlan.close()
 #4---Вывод ip-адреса
@@ -93,6 +101,9 @@ os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\RAW_IP.tx
 os.system('copy C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt old_IP.txt')
 os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt')
 time.sleep(20)
+#connect.enable()
+#output_3 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan 102'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+#time.sleep(20)
 #5---Отправка в телеграм
 token = '5629862008:AAGbPMYXqcmthw-vW-tvyoUfdGkQ_Qdl_Gw'
 bot = telebot.TeleBot(token)
@@ -107,5 +118,16 @@ except:
         bot.send_message(chat_id, h)
         time.sleep(25)
 
+'''
+  import smtpmail
+    import os
 
+    sender = os.getenv('smpt_sender')
+    pswd = os.getenv('smtp_pass')
+    host = os.getenv('smtp_host', 'smtp.gmail.com')
+    port = os.getenv('smtp_port', 587)
+    read_only_settings: smtpmail.Settings = smatpmail.Mail.init(sender, pswd, host, port)
+    ###
+    smtpmail.Mail.send_mail(to, subject, content, content_type='plain')
+    '''
 
