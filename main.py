@@ -3,108 +3,137 @@ import os
 import telebot
 import time
 
-#1---Поиск vlan и mac адреса на коммутаторе и вышрузка в файл arp.txt
+def save(data,path):
+    with open(path,'a') as f:
+        print(data,file=f)
+
+# Блок поиска vlan и mac адреса на коммутаторе и выгрузка в файл arp.txt
+#sw_ip=input('Enter switch ip address:') #Ввод ip адреса коммутатора
 port=input('Eneter number port for scan:')
-#port = ('1/0/14')  # Номер порта коммутатора с которого нужен ip-адрес
+#port = ('1/0/22','3/0/4','3/0/7')  # Номер порта коммутатора с которого нужен ip адрес
 port_scan = ('1/0/15')  # Номер порта к которому подключен сканер(ноутбук)
-arp = open('arp.txt','w')
+
+#switch = {'device_type': 'cisco_ios', 'ip': f'192.168.3.{sw_ip}', 'username': 'root', 'password': 'root12345','secret': 'root12345'}
 switch = {'device_type': 'cisco_ios', 'ip': '192.168.3.135', 'username': 'root', 'password': 'root12345',
           'secret': 'root12345'}
 connect = ConnectHandler(**switch)
 #connect.enable()
 #print(connect.find_prompt())
-output = connect.send_command(f'show mac-addr-table interface {port}') #команда на коммутаторе Qtech
+output = connect.send_command(f'show mac-addr-table interface {port}') #команда на коммутаторе Qtech показать mac адреса
+#connect.disconnect()
 print(output)
-print(output,file=arp)
-arp.close()
-#2---Разделение по файлам mac-адрес в файл MAC.txt, VLAN в файл Vlan.txt
+save(output,'arp.txt')
+
+# Блок разделение по файлам mac-адрес в файл MAC.txt, VLAN в файл Vlan.txt
 mac_add=open('arp.txt')
-MAC=open('MAC.txt','w')
-Vlan=open('Vlan.txt','w')
 Mac=mac_add.read()
-a=Mac.split()
-#print(a)
-print(a[9],file=Vlan) #позиция vlan в файле
-#Скан для двух mac адресов(доделать для большего количества)
-#Сохранение всех найденных mac-адресов.
+a=Mac.split() #Разделяем на слова
+save(a[9],'Vlan.txt')
+#print(a[9],file=Vlan) #позиция номера vlan в файле и запись в Vlan.txt
+
+# Цикл подготовки mac для поиска в WIN
 for q in a[8::3]:
     r=q.replace(':','-')# замена : на тире
     low=r.lower()# переход на нижний регистр
-    print(low,file=MAC)
-'''
-try:
-   ch_mac_1=a[8].replace(':','-') #замена с двоеточия на тире(заменить на позицию MAC-адреса)
-   ch_mac_2=a[11].replace(':','-')
-   c_1=ch_mac_1.lower() #замена на нижний регистр
-   c_2=ch_mac_2.lower()
-   print(c_1,c_2,file=MAC) #позиция mac-адреса в файле(могут быть 2 mac-адреса),8 поз==1 MAC|11 поз==2 MAC
-except:
-    ch = a[8].replace(':', '-')  # замена с двоеточия на тире(заменить на позицию MAC-адреса)
-    c = ch.lower()  # замена на нижний регистр
-    print(a[8], file=MAC)  # позиция mac-адреса в файле(могут быть 2 mac-адреса),8 поз==1 MAC|11 поз==2 MAC
-'''
-MAC.close()
+    save(low,'MAC.txt')
+
+#Блок для вывода готовых mac адресов
 
 file=open('MAC.txt')
 rd=file.read()
 spl=rd.split()
-print(spl)
-#connect.enable()
-#output_2 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan {a[9]}'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
-#time.sleep(20)
-#3---Сканирование адресов в зависимости от номера Vlan.
+print(spl) # Вывод MAC адресов
+time.sleep(5)
+
+# Блок изменения номера Vlan на порту
+
+try:
+    #connect = ConnectHandler(**switch)
+    connect.enable()
+    output_2 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan {a[9]}'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+    connect.disconnect()
+except:
+    pass
+
+# Блок переполучения ip адреса сетевой картой
+print('Stage_release.')
+os.system('ipconfig /release')
+time.sleep(60)
+print('Stage_renew')
+os.system('ipconfig /renew')
+time.sleep(60)
+
+# Блок сканирование адресов в зависимости от номера Vlan.
+print('Start scan')
 if a[9]=='102':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.66-126 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='101':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.2-62 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='103':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.130-158 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+         os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='104':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.162-190 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+         os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='105':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.194-222 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 elif a[9]=='106':
     os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.226-254 > arp_nmap.txt' )
     for i in spl:
-      os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
+        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
 else:
     print('Check VLAN.')
 mac_add.close()
-Vlan.close()
-#4---Вывод ip-адреса
+file.close()
+print('End scan.')
+
+# Блок вывода ip-адреса
 Raw_ip=open('RAW_IP.txt')
-ip_fin=open('IP.txt','w')
+#ip_fin=open('IP.txt','w')
 ip=Raw_ip.read()
 ip_a=ip.split()
 IP_FIN=[] # Добавление в список ip адресов
 for j in range(len(ip_a)):
     if j%4==0:
         IP_FIN.append(ip_a[j]) # Добавляет только значения кратные 4
-print(IP_FIN,file=ip_fin) #Запись ip адреса в файл.
-print(IP_FIN)
+save(IP_FIN,'IP.txt')
+#print(IP_FIN,file=ip_fin) #Запись ip адреса в файл.
+print(IP_FIN) #Вывод ip-адресов
 Raw_ip.close()
-ip_fin.close()
-for k in IP_FIN:
-  os.system(f'cd "C:\\Program Files (x86)\\Nmap" | nmap -O {k} > OS.txt')
 
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\RAW_IP.txt')
-os.system('copy C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt old_IP.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt')
-time.sleep(20)
-#connect.enable()
-#output_3 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan 102'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
-#time.sleep(20)
-#5---Отправка в телеграм
+#for k in IP_FIN:
+# os.system(f'cd "C:\\Program Files (x86)\\Nmap" | nmap -O {k} > OS.txt')
+
+
+time.sleep(10)
+
+# Блок возвращения порта в начальное состояние (102 Vlan)
+try:
+    connect = ConnectHandler(**switch)
+    connect.enable()
+    output_3 = connect.send_config_set([f'interface {port_scan}','switchport access vlan 102'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+    connect.disconnect()
+except:
+    pass
+
+# Блок переполучения ip адреса
+print('Stage_2_release.')
+os.system('ipconfig /release')
+time.sleep(60)
+print('Stage_2_renew')
+os.system('ipconfig /renew')
+time.sleep(60)
+print('Stage_Send to telegramm.')
+
+# Блок отправки в телеграм
 token = '5629862008:AAGbPMYXqcmthw-vW-tvyoUfdGkQ_Qdl_Gw'
 bot = telebot.TeleBot(token)
 chat_id = '1366665116'
@@ -118,16 +147,11 @@ except:
         bot.send_message(chat_id, h)
         time.sleep(25)
 
-'''
-  import smtpmail
-    import os
-
-    sender = os.getenv('smpt_sender')
-    pswd = os.getenv('smtp_pass')
-    host = os.getenv('smtp_host', 'smtp.gmail.com')
-    port = os.getenv('smtp_port', 587)
-    read_only_settings: smtpmail.Settings = smatpmail.Mail.init(sender, pswd, host, port)
-    ###
-    smtpmail.Mail.send_mail(to, subject, content, content_type='plain')
-    '''
-
+# Блок удаляет за собой старые файлы
+os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\arp.txt')
+os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\MAC.txt')
+os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\Vlan.txt')
+os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\RAW_IP.txt')
+os.system('copy C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt old_IP.txt')
+os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt')
+print('All Done.')
