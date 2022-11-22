@@ -1,152 +1,58 @@
 from netmiko import ConnectHandler
-import os
-import telebot
 import time
-
-# Блок поиска vlan и mac адреса на коммутаторе и вышрузка в файл arp.txt
-port=input('Eneter number port for scan:')
-#port = ('1/0/22','3/0/4','3/0/7')  # Номер порта коммутатора с которого нужен ip-адрес
-port_scan = ('1/0/15')  # Номер порта к которому подключен сканер(ноутбук)
-arp = open('arp.txt','w')
-switch = {'device_type': 'cisco_ios', 'ip': '192.168.3.135', 'username': 'root', 'password': 'root12345',
-          'secret': 'root12345'}
-connect = ConnectHandler(**switch)
-#connect.enable()
-#print(connect.find_prompt())
-output = connect.send_command(f'show mac-addr-table interface {port}') #команда на коммутаторе Qtech
-#connect.disconnect()
-print(output)
-print(output,file=arp)
-arp.close()
-# Блок разделение по файлам mac-адрес в файл MAC.txt, VLAN в файл Vlan.txt
-mac_add=open('arp.txt')
-MAC=open('MAC.txt','w')
-Vlan=open('Vlan.txt','w')
-Mac=mac_add.read()
-a=Mac.split() #Разделяем на слова
-#print(a)
-print(a[9],file=Vlan) #позиция номера vlan в файле и запись в Vlan.txt
-# Цикл подготовки mac для поиска в WIN
-for q in a[8::3]:
-    r=q.replace(':','-')# замена : на тире
-    low=r.lower()# переход на нижний регистр
-    print(low,file=MAC)
-MAC.close()
-
-#Блок для вывода готовых mac адресов (Нужен ли?)
-file=open('MAC.txt')
-rd=file.read()
-spl=rd.split()
-print(spl) # Вывод MAC адресов
-time.sleep(5)
-# Блок изменения номера Vlan на порту
-try:
-    #connect = ConnectHandler(**switch)
-    connect.enable()
-    output_2 = connect.send_config_set([f'interface {port_scan}',f'switchport access vlan {a[9]}'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+import os
+#Функция сохранения в файл
+def save(data,path):
+    with open(path,'a') as f:
+        print(data,file=f)
+#Функция записи конфига в файл
+def quantity(add,str_num):
+    switch = {'device_type': 'cisco_ios', 'ip': add , 'username': 'root', 'password': 'root12345',
+              'secret': 'root12345'}
+    connect = ConnectHandler(**switch)
+    # connect.enable()
+    # print(connect.find_prompt())
+    output1 = connect.send_command('sh run', expect_string='[-#/!Esc@!,.]', delay_factor=100)  #
+    i = 0
+    print(output1)
+    while i != str_num:  # Цикл строк
+        output2 = connect.send_command(' ', expect_string='[/!Esc@!,.]') # Читает построчно
+        i = i + 1
+        print(i, output2)
+        save(output2, 'conf.txt')
+    time.sleep(5)
+    with open('conf.txt') as file:
+        pure = [q for q in file if not q == '\x1b[0mMore: <space>,  Quit: q or CTRL+Z, One line: <return> \n'] # Удаляет строку из файла
+        fin = '\n'.join(pure)
+        save(fin, f'ip_addr_{add}.txt') # Сохранение в файл
+        print(fin)
+        file.close()
+        os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf.txt') # Удаляет файл conf.txt
+        time.sleep(10)
     connect.disconnect()
-except:
-    pass
-# Блок переполучения ip адреса сетевой картой
-print('Stage_release.')
-os.system('ipconfig /release')
-time.sleep(60)
-print('Stage_renew')
-os.system('ipconfig /renew')
-time.sleep(60)
-# Блок сканирование адресов в зависимости от номера Vlan.
-print('Start scan')
-if a[9]=='102':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.66-126 > arp_nmap.txt' )
-    for i in spl:
-        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-elif a[9]=='101':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.2-62 > arp_nmap.txt' )
-    for i in spl:
-        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-elif a[9]=='103':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.130-158 > arp_nmap.txt' )
-    for i in spl:
-         os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-elif a[9]=='104':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.162-190 > arp_nmap.txt' )
-    for i in spl:
-         os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-elif a[9]=='105':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.194-222 > arp_nmap.txt' )
-    for i in spl:
-        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-elif a[9]=='106':
-    os.system('cd "C:\\Program Files (x86)\\Nmap" | nmap -F 192.168.1.226-254 > arp_nmap.txt' )
-    for i in spl:
-        os.system(f'arp -a | findstr {i} >> RAW_IP.txt')
-else:
-    print('Check VLAN.')
-mac_add.close()
-Vlan.close()
-print('End scan.')
-# Блок вывода ip-адреса
-Raw_ip=open('RAW_IP.txt')
-ip_fin=open('IP.txt','w')
-ip=Raw_ip.read()
-ip_a=ip.split()
-IP_FIN=[] # Добавление в список ip адресов
-for j in range(len(ip_a)):
-    if j%4==0:
-        IP_FIN.append(ip_a[j]) # Добавляет только значения кратные 4
-print(IP_FIN,file=ip_fin) #Запись ip адреса в файл.
-print(IP_FIN) #Вывод ip-адресов
-Raw_ip.close()
-ip_fin.close()
-#for k in IP_FIN:
-# os.system(f'cd "C:\\Program Files (x86)\\Nmap" | nmap -O {k} > OS.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\RAW_IP.txt')
-os.system('copy C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt old_IP.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt')
 
-time.sleep(10)
-# Блок возвращения порта в начальное состояние (102 Vlan)
 
-try:
+#--Блок доступа к коммутатору
+lst_cisco=[137,139,140]
+lst_qtech=[130,131,135,136,138]
+
+for j in lst_qtech:
+    switch = {'device_type': 'cisco_ios', 'ip': f'192.168.3.{j}', 'username': 'root', 'password': 'root12345',
+                  'secret': 'root12345'}
     connect = ConnectHandler(**switch)
     connect.enable()
-    output_3 = connect.send_config_set([f'interface {port_scan}','switchport access vlan 102'])  # команда на коммутаторе Qtec переключение порта на заданный VLAN
+    output = connect.send_command('show running-config')
+    save(output,f'ip_addr_192_168_3_{j}.txt')
+    print(output)
+    time.sleep(5)
     connect.disconnect()
-except:
-    pass
-# Блок переполучения ip адреса    
-print('Stage_2_release.')
-os.system('ipconfig /release')
-time.sleep(60)
-print('Stage_2_renew')
-os.system('ipconfig /renew')
-time.sleep(60)
-print('Stage_Send to telegramm.')
 
-# Блок отправки в телеграм
-token = '5629862008:AAGbPMYXqcmthw-vW-tvyoUfdGkQ_Qdl_Gw'
-bot = telebot.TeleBot(token)
-chat_id = '1366665116'
-text = IP_FIN
-try:
-    for h in IP_FIN:
-         bot.send_message(chat_id, h)
-         time.sleep(15)
-except:
-    for h in IP_FIN:
-        bot.send_message(chat_id, h)
-        time.sleep(25)
-print('All Done.')
-'''
-  import smtpmail
-    import os
-
-    sender = os.getenv('smpt_sender')
-    pswd = os.getenv('smtp_pass')
-    host = os.getenv('smtp_host', 'smtp.gmail.com')
-    port = os.getenv('smtp_port', 587)
-    read_only_settings: smtpmail.Settings = smatpmail.Mail.init(sender, pswd, host, port)
-    ###
-    smtpmail.Mail.send_mail(to, subject, content, content_type='plain')
-    '''
+for k in lst_cisco:
+    if k==lst_cisco[0]:
+        quantity(f'192.168.3.{lst_cisco[0]}', 302) #
+    if k==lst_cisco[1]:
+        quantity(f'192.168.3.{lst_cisco[1]}', 84)
+    if k==lst_cisco[2]:
+        quantity(f'192.168.3.{lst_cisco[2]}', 249)
+print('Collect finish')
 
