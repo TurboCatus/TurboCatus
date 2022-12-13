@@ -15,6 +15,11 @@ from email import encoders
 def save(data,path):
     with open(path,'a') as f:
         print(data,file=f)
+#--Функция сохранения в файл без перезаписи
+def add_save(data,path):
+    with open(path,'w') as f:
+        print(data,file=f)
+
 #--Функция записи конфига в файл
 def quantity(add,str_num):
     switch = {'device_type': 'cisco_ios', 'ip': add , 'username': 'root', 'password': 'root12345',
@@ -44,7 +49,7 @@ def quantity(add,str_num):
 
 #--Для проставление даты
 x = datetime.datetime.now()
-save(x,'log.txt')
+add_save(x,'log.txt')
 #print(x.day, x.month, x.year,sep='|')
 
 #--Блок доступа к коммутатору
@@ -63,25 +68,25 @@ try:
         #print(output)
         time.sleep(5)
         connect.disconnect()
-    save('Collect config Qtech finished.','log.txt')
+    add_save('Collect config Qtech finished.','log.txt')
     print('Collect config Qtech finished.')
 except:
-    save('Check save in Qtech section.', 'log.txt')
+    add_save('Check save in Qtech section.', 'log.txt')
     print('Check save in Qtech section.')
 
 #--Конфигурация Cisco
 try:
     for k in lst_cisco:
         if k==lst_cisco[0]:
-            quantity(f'192.168.3.{lst_cisco[0]}', 302) #
+            quantity(f'192.168.3.{lst_cisco[0]}', 302)
         if k==lst_cisco[1]:
             quantity(f'192.168.3.{lst_cisco[1]}', 84)
         if k==lst_cisco[2]:
             quantity(f'192.168.3.{lst_cisco[2]}', 249)
-    save('Collect config Cisco finished.', 'log.txt')
+    add_save('Collect config Cisco finished.', 'log.txt')
     print('Collect config Cisco finished.')
 except:
-    save('Check save in Cisco section.', 'log.txt')
+    add_save('Check save in Cisco section.', 'log.txt')
     print('Check save in Cisco section.')
 
 #--Добавление в архив
@@ -90,10 +95,10 @@ try:
     with zipfile.ZipFile(f'{x.day}_{x.month}_{x.year}_config.zip', mode="w") as archive:
         for file_path in directory.iterdir():
             archive.write(file_path, arcname=file_path.name)
-    save('Zip_file done.', 'log.txt')
+    add_save('Zip_file done.', 'log.txt')
     print('Zip_file done.')
 except:
-    save('Check zip section.', 'log.txt')
+    add_save('Check zip section.', 'log.txt')
     print('Check zip section.')
 
 #--Отправка на почту
@@ -129,10 +134,10 @@ try:
     text = message.as_string()
     session.sendmail(sender_address, receiver_address, text)
     session.quit()
-    save('Email send.', 'log.txt')
+    add_save('Email send.', 'log.txt')
     print('Email send.')
 except:
-    save('Check email sender.', 'log.txt')
+    add_save('Check email sender.', 'log.txt')
     print('Check email sender.')
 
 #--Очистка файлов
@@ -142,21 +147,21 @@ try:
 #--Удаление файлов конфигурации Qtech
     for rem in lst_qtech_rm:
         os.system(f'del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192_168_3_{rem}.txt ')
-    save('File Qtech deleted.', 'log.txt')
+    add_save('File Qtech deleted.', 'log.txt')
     print('File Qtech deleted.')
 except:
-    save('Check delete file from Qtech', 'log.txt')
+    add_save('Check delete file from Qtech', 'log.txt')
     print('Check delete file from Qtech')
 
 #--Удаление файлов конфигурации Cisco
 try:
     for rem in lst_cisco_rm:
         os.system(f'del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192.168.3.{rem}.txt ')
-    save('File Cisco deleted.', 'log.txt')
+    add_save('File Cisco deleted.', 'log.txt')
     print('File Cisco deleted.')
 except:
-    save('Check delete file from Cisco', 'log.txt')
+    add_save('Check delete file from Cisco', 'log.txt')
     print('Check delete file from Cisco')
 
 #--Отсечка даты
-save('-------------------------------','log.txt')
+add_save('-------------------------------','log.txt')
