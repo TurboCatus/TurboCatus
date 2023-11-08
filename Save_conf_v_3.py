@@ -22,8 +22,8 @@ def add_save(data,path):
 
 #--Функция записи конфига в файл
 def quantity(add,str_num):
-    switch = {'device_type': 'cisco_ios', 'ip': add , 'username': 'root', 'password': 'root12345',
-              'secret': 'root12345'}
+    switch = {'device_type': 'cisco_ios', 'ip': add , 'username': 'root', 'password': 'root',
+              'secret': 'root'}
     connect = ConnectHandler(**switch)
     connect.enable()
     # print(connect.find_prompt())
@@ -39,10 +39,10 @@ def quantity(add,str_num):
     with open('conf.txt') as file:
         pure = [q for q in file if not q == '\x1b[0mMore: <space>,  Quit: q or CTRL+Z, One line: <return> \n'] # Удаляет строку из файла
         fin = '\n'.join(pure)
-        save(fin, f'C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_{add}.txt') # Сохранение в файл
+        save(fin, f'C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_{add}.txt') # Сохранение в файл
         #print(fin)
         file.close()
-        os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf.txt') # Удаляет файл conf.txt
+        os.system('del C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf.txt') # Удаляет файл conf.txt
         time.sleep(10)
     connect.disconnect()
 
@@ -59,12 +59,12 @@ lst_qtech=[130,131,135,136,138]
 #--Конфигурация Qtech
 try:
     for j in lst_qtech:
-        switch = {'device_type': 'cisco_ios', 'ip': f'192.168.3.{j}', 'username': 'root', 'password': 'root12345',
-                  'secret': 'root12345'}
+        switch = {'device_type': 'cisco_ios', 'ip': f'192.168.3.{j}', 'username': 'root', 'password': 'root',
+                  'secret': 'root'}
         connect = ConnectHandler(**switch)
         connect.enable()
         output = connect.send_command('show running-config')
-        save(output,f'C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192_168_3_{j}.txt')
+        save(output,f'C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192_168_3_{j}.txt')
         #print(output)
         time.sleep(5)
         connect.disconnect()
@@ -91,7 +91,7 @@ except:
 
 #--Добавление в архив
 try:
-    directory = pathlib.Path("C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf")
+    directory = pathlib.Path("C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf")
     with zipfile.ZipFile(f'{x.day}_{x.month}_{x.year}_config.zip', mode="w") as archive:
         for file_path in directory.iterdir():
             archive.write(file_path, arcname=file_path.name)
@@ -105,9 +105,9 @@ except:
 try:
     mail_content = 'Weekly config'# Message to send in body
 #--The mail addresses and password
-    sender_address = 'stas.smy@gmail.com'
-    sender_pass = 'fmuhuhtnmljigsuj'
-    receiver_address = 'stas.smy@gmail.com'
+    sender_address = 'mail'
+    sender_pass = 'pass'
+    receiver_address = 'mail'
 
 #--Setup the MIME
     message = MIMEMultipart()
@@ -146,7 +146,7 @@ lst_qtech_rm=[130,131,135,136,138]
 try:
 #--Удаление файлов конфигурации Qtech
     for rem in lst_qtech_rm:
-        os.system(f'del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192_168_3_{rem}.txt ')
+        os.system(f'del C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192_168_3_{rem}.txt ')
     add_save('File Qtech deleted.', 'log.txt')
     print('File Qtech deleted.')
 except:
@@ -156,7 +156,7 @@ except:
 #--Удаление файлов конфигурации Cisco
 try:
     for rem in lst_cisco_rm:
-        os.system(f'del C:\\Users\\SmychkovSA\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192.168.3.{rem}.txt ')
+        os.system(f'del C:\\Users\\username\\PycharmProjects\\Conf_network_main\\conf\\ip_addr_192.168.3.{rem}.txt ')
     add_save('File Cisco deleted.', 'log.txt')
     print('File Cisco deleted.')
 except:
