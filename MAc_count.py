@@ -3,7 +3,7 @@ import time
 import telebot #pyTelegrammbotApi
 #import  pywhatkit
 #--Блок отправки в телеграмм
-token = '5629862008:AAGbPMYXqcmthw-vW-tvyoUfdGkQ_Qdl_Gw'
+token = 'token'
 bot = telebot.TeleBot(token)
 chat_id = '1366665116'
 #--Блок доступа к коммутатору
