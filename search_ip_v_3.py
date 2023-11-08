@@ -13,9 +13,8 @@ port=input('Eneter number port for scan:')
 #port = ('1/0/22','3/0/4','3/0/7')  # Номер порта коммутатора с которого нужен ip адрес
 port_scan = ('1/0/15')  # Номер порта к которому подключен сканер(ноутбук)
 
-#switch = {'device_type': 'cisco_ios', 'ip': f'192.168.3.{sw_ip}', 'username': 'root', 'password': 'root12345','secret': 'root12345'}
-switch = {'device_type': 'cisco_ios', 'ip': '192.168.3.135', 'username': 'root', 'password': 'root12345',
-          'secret': 'root12345'}
+switch = {'device_type': 'cisco_ios', 'ip': '192.168.3.135', 'username': 'admin', 'password': 'admin',
+          'secret': 'admin'}
 connect = ConnectHandler(**switch)
 #connect.enable()
 #print(connect.find_prompt())
@@ -134,9 +133,9 @@ time.sleep(60)
 print('Stage_Send to telegramm.')
 
 # Блок отправки в телеграм
-token = '5629862008:AAGbPMYXqcmthw-vW-tvyoUfdGkQ_Qdl_Gw'
+token = 'token'
 bot = telebot.TeleBot(token)
-chat_id = '1366665116'
+chat_id = 'chatid'
 text = IP_FIN
 try:
     for h in IP_FIN:
@@ -148,10 +147,10 @@ except:
         time.sleep(25)
 
 # Блок удаляет за собой старые файлы
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\arp.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\MAC.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\Vlan.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\RAW_IP.txt')
-os.system('copy C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt old_IP.txt')
-os.system('del C:\\Users\\SmychkovSA\\PycharmProjects\\pythonProject1\\IP.txt')
+os.system('del arp.txt')
+os.system('del MAC.txt')
+os.system('del Vlan.txt')
+os.system('del RAW_IP.txt')
+os.system('copy IP.txt old_IP.txt')
+os.system('del IP.txt')
 print('All Done.')
