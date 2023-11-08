@@ -38,9 +38,9 @@ import time
 import ftplib
 
 # Fill Required Information
-HOSTNAME = "90.188.91.191"
-USERNAME = "admin"
-PASSWORD = "eUj8GeW55SvYaswqUyDSm5v6N"
+HOSTNAME = ""
+USERNAME = ""
+PASSWORD = ""
 
 # Connect FTP Server
 ftp_server = ftplib.FTP(HOSTNAME, USERNAME, PASSWORD)
