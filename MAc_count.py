@@ -7,7 +7,7 @@ token = 'token'
 bot = telebot.TeleBot(token)
 chat_id = 'chatid'
 #--Блок доступа к коммутатору
-switch={'device_type':'cisco_ios','ip':'192.168.3.130','username':'root','password':'root12345'}
+switch={'device_type':'cisco_ios','ip':'192.168.3.130','username':'root','password':'root'}
 connect=ConnectHandler(**switch)
 # Блок создает файлы с номером Vlan и записывает mac адреса для данного Vlan
 for j in range(101,107):
@@ -100,6 +100,5 @@ for i in range(101,107): #Счетчик mac адресов
     file_arp.close()
     file_arp_count.close()
     file_count.close()
-#pywhatkit.sendwhatmsg('+79234228095', 'Тест',15,52)
 print('Finish scan.')
 
