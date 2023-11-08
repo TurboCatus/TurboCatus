@@ -5,7 +5,7 @@ import telebot #pyTelegrammbotApi
 #--Блок отправки в телеграмм
 token = 'token'
 bot = telebot.TeleBot(token)
-chat_id = '1366665116'
+chat_id = 'chatid'
 #--Блок доступа к коммутатору
 switch={'device_type':'cisco_ios','ip':'192.168.3.130','username':'root','password':'root12345'}
 connect=ConnectHandler(**switch)
